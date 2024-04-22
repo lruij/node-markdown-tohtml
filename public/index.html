@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+      markdown to html
+    </title>
+    <link rel="stylesheet" href="src/template/index.css">
+  </head>
+
+  <body>
+    <h4>markdown to html</h4>
+<h5>工具</h5>
+<ul>
+<li>ejs</li>
+<li>marked</li>
+<li>browser-sync</li>
+</ul>
+<h5>步骤</h5>
+<ol>
+<li>定义 ejs 模版</li>
+</ol>
+<pre><code class="language-html">
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+
+  &lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;
+      &lt;%= title %&gt;
+    &lt;/title&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;src/template/index.css&quot;&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;%- content %&gt;
+  &lt;/body&gt;
+
+&lt;/html&gt;
+
+</code></pre>
+<ol start="2">
+<li>转换 markdown 为 html</li>
+</ol>
+<pre><code class="language-js">const marked = require(&#39;marked&#39;)
+const readme = fs.readFileSync(&#39;README.md&#39;);
+const fs  = require(&#39;nodefs&#39;)
+const ejs = require(&#39;ejs&#39;);
+
+const render = () =&gt; {
+  const readme = fs.readFileSync(&#39;README.md&#39;);
+
+  ejs.renderFile(&#39;src/template/index.ejs&#39;, {
+    content: marked.parse(readme.toString()),
+    title: &#39;markdown to html&#39;
+  }, (err, data) =&gt; {
+    if (err) {
+      console.log(err)
+    }
+    console.log(data)
+  })
+}
+</code></pre>
+<ol start="3">
+<li>输出到指定文件</li>
+</ol>
+<pre><code class="language-js">
+let writeStream = fs.createWriteStream(&#39;./public/index.html&#39;)
+writeStream.write(data)
+writeStream.close()
+writeStream.on(&#39;finish&#39;, () =&gt; {
+  // .......完成操作
+})
+</code></pre>
+<ol start="4">
+<li>打开浏览器预览</li>
+</ol>
+<pre><code class="language-js">const browserSync = require(&#39;browser-sync&#39;);
+
+let browser;
+
+const openBrowser = () =&gt; {
+  if (!browser) {
+    browser = browserSync.create()
+    browser.init({
+      server: {
+        baseDir: &#39;./&#39;,
+        index: &#39;public/index.html&#39;,
+      }
+    })
+  } else {
+    browser.reload()
+  }
+}
+</code></pre>
+<ol start="5">
+<li>监听 markdown 文件实时编译</li>
+</ol>
+<pre><code class="language-js">const fs = require(&#39;node:fs&#39;)
+fs.watchFile(&#39;README.md&#39;, (curr, prev) =&gt; {
+  if (curr.mtime !== prev.mtime) {
+    render()
+  }
+})
+</code></pre>
+<pre><code class="language-sh">node src/index.js
+</code></pre>
+
+  </body>
+
+</html>
